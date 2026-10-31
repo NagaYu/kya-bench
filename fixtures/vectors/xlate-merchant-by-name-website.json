@@ -1,0 +1,54 @@
+{
+  "id": "xlate-merchant-by-name-website",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "agree",
+  "description": "Merchant without id matched by name and website",
+  "spec_ref": "id-else-name+website matching on both sides",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "min": 1000,
+          "max": 25000
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "id": "merchant_1",
+              "name": "Demo Merchant",
+              "website": "https://demo-merchant.example"
+            },
+            {
+              "name": "Second Merchant",
+              "website": "https://second-merchant.example"
+            }
+          ]
+        }
+      ],
+      "exp": 1790003600
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 19900,
+        "currency": "USD"
+      },
+      "merchant": {
+        "name": "Second Merchant",
+        "website": "https://second-merchant.example"
+      }
+    }
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": [
+    "XLATE_EQUIVALENT",
+    "XLATE_BOTH_ACCEPT"
+  ]
+}

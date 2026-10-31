@@ -1,0 +1,29 @@
+{
+  "id": "tap-apc-nonce-mismatch",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "payment_container",
+  "description": "Payment container nonce differs from the signature nonce",
+  "spec_ref": "SPEC APC: nonce must match; failure blocks payment",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary\";alg=\"rsa-pss-sha256\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:rCr3Qw9ZaN6DDqL+h93dnQ44u9RuUTZ7/6/m/Dz1lPxOALpMKi9XpkZk+OTsmdHPzIhm3+fOKnXav/yZeFbOBbxuRe8kUi+x8o9waqpHv2yBu2TtKDoUXlf44QMxQWb6nDGWkgxijz33oYKwAB4+QKkvvtRwZoriCw5z7ye3DD/VpcQutR42LU7QJvFVzgR0UHiveKgJjCCHueDXxotADrbKX4APaXHArXrBjl3Ltns7AQZMuPkXXeNDAEjOJAyqF6mmAmbk437lrPbEFsw9lkdjPfM7itRuEWiQPGqz922jxvcgxM3TAqRriF+ukpHwGq1Rf8Mb/IQT6DGhyqxSmw==:"
+        },
+        "body": "{\"agenticPaymentContainer\":{\"nonce\":\"other-nonce\",\"cardMetadata\":{\"lastFour\":\"1234\",\"paymentAccountReference\":\"V0010013018326012345678901234\",\"shortDescription\":\"Visa \\u00b7\\u00b7\\u00b7\\u00b7 1234\"},\"kid\":\"primary\",\"alg\":\"PS256\",\"signature\":\"CsIL9sSzZ3Cyv9q6tucyp6kJzwJoy5g3d127A6Ezc_RX0nDUC9zIWT2xKK7bmCJwXRQVjJDQW3ggN8lhcgEcR1s6MnlD_XkgKL58F1Ns39Z6dKJvc4wZHIFworDvn3tawVw-O9mLBOvvsfNzMHSQbdNJhk7_6To_rSivX830WOBSWzo8ygUi5mmlKsA9CmJrbuSNyCfLonxa5rbJfkVBNjtcBZrNi7Rx8IfcCPxYDAKQWdwNn6bJTrgvMJcekSN6czzG7h4HlHyvbBhQYcUQ6BKWQg_6VhjQz4KSk_WpT6QOotyjBk2-JifwXno53h-c1VNh_0iy8fDuPIe69O1wtw\"}}",
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_APC_NONCE_MISMATCH"
+  ]
+}

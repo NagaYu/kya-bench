@@ -1,0 +1,15 @@
+{
+  "id": "malformed-bundle-not-json",
+  "protocol": "vi",
+  "kind": "bundle",
+  "category": "malformed",
+  "description": "Bundle is not JSON",
+  "spec_ref": "KYA Bench bundle",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": "{not json",
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "BUNDLE_INVALID"
+  ]
+}

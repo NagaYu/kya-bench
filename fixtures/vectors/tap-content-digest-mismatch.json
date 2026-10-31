@@ -1,0 +1,31 @@
+{
+  "id": "tap-content-digest-mismatch",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "signature",
+  "description": "Body altered: Content-Digest no longer matches",
+  "spec_ref": "RFC 9530 \u00a72",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "content-digest": "sha-256=:OkYsgAx0eUrrlq8awgs17wEunSXoXqwS10c9W068D8c=:",
+          "content-type": "application/json",
+          "signature-input": "sig2=(\"@authority\" \"@path\" \"content-digest\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:Ov89I+RRPsosO82evRkYWEWQASRCtEWkuYZI40l96Z6r3LTii7eXyz/EwLFqKjfC1am60G77HsW3l1SsqUw6BA==:"
+        },
+        "body": "{\"cartId\":\"c-2\"}",
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_CONTENT_DIGEST_MISMATCH"
+  ]
+}

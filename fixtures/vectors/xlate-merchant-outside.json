@@ -1,0 +1,55 @@
+{
+  "id": "xlate-merchant-outside",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "agree",
+  "description": "Merchant not in the allowlist",
+  "spec_ref": "AP2 Allowed Merchants ~ VI C \u00a74.1",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "min": 1000,
+          "max": 25000
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "id": "merchant_1",
+              "name": "Demo Merchant",
+              "website": "https://demo-merchant.example"
+            },
+            {
+              "name": "Second Merchant",
+              "website": "https://second-merchant.example"
+            }
+          ]
+        }
+      ],
+      "exp": 1790003600
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 19900,
+        "currency": "USD"
+      },
+      "merchant": {
+        "id": "merchant_9",
+        "name": "Shady",
+        "website": "https://shady.example"
+      }
+    }
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": [
+    "XLATE_EQUIVALENT",
+    "XLATE_BOTH_REJECT"
+  ]
+}

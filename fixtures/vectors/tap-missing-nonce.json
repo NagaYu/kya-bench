@@ -1,0 +1,28 @@
+{
+  "id": "tap-missing-nonce",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "params",
+  "description": "Signature parameters lack nonce",
+  "spec_ref": "SPEC minimum fields; REPO missing nonce -> 403",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:0GWIZ4aXz/7tMwm4Dnd3gGExqNUwgZUtLmcgoy1UyNmCBO3XVk+IyGtUn40N7/UaLQNZcxAdI75E7GM72LuwBA==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_PARAM_MISSING"
+  ]
+}

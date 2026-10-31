@@ -1,0 +1,28 @@
+{
+  "id": "tap-repo-keyId-parameter",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "spec_gap",
+  "description": "Reference agent's camel-case keyId parameter",
+  "spec_ref": "spec gap TAP-02; REPO agent_app.py signature_params",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyId=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:7sgwOxDSCrr6n6ThFet66GpVjftfo3B+BKJ03n0x/DaBGV6vsldelbqe+3LmoP9LiX/gf4Rxj2slJPcuwizMDw==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "indeterminate",
+  "expected_reason_codes": [
+    "SPEC_GAP"
+  ]
+}

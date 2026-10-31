@@ -1,0 +1,53 @@
+{
+  "id": "xlate-decimal-max",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "undecided",
+  "description": "amount_range max as a decimal (AP2 doc example style)",
+  "spec_ref": "spec gap AP2-04",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "max": 250.0
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "id": "merchant_1",
+              "name": "Demo Merchant",
+              "website": "https://demo-merchant.example"
+            },
+            {
+              "name": "Second Merchant",
+              "website": "https://second-merchant.example"
+            }
+          ]
+        }
+      ],
+      "exp": 1790003600
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 19900,
+        "currency": "USD"
+      },
+      "merchant": {
+        "id": "merchant_1",
+        "name": "Demo Merchant",
+        "website": "https://demo-merchant.example"
+      }
+    }
+  },
+  "expected_verdict": "indeterminate",
+  "expected_reason_codes": [
+    "XLATE_UNDECIDED"
+  ]
+}

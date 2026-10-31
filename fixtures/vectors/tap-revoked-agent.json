@@ -1,0 +1,28 @@
+{
+  "id": "tap-revoked-agent",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "registry",
+  "description": "Agent itself marked inactive",
+  "spec_ref": "REPO agent-registry: inactive agent",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"revoked-agent-key\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:4sjYGZtcZD+fo/YmWliRzACpDPIwLgboINWFzeOCUlg4EwqaH9aRdcYqszhVI8D42wlgdy0wxVLGZT7tuUrfCA==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_AGENT_REVOKED"
+  ]
+}

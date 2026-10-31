@@ -1,0 +1,29 @@
+{
+  "id": "tap-content-digest-covered-valid",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "valid",
+  "description": "POST covering @method and content-digest with a matching body digest",
+  "spec_ref": "RFC 9421 \u00a72.1; RFC 9530",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "content-digest": "sha-256=:OkYsgAx0eUrrlq8awgs17wEunSXoXqwS10c9W068D8c=:",
+          "content-type": "application/json",
+          "signature-input": "sig2=(\"@authority\" \"@path\" \"@method\" \"content-digest\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:iV1k6eUxxVgOmPVFEk5gbDCq0C3ll3Yi3Ad/UwZMaJJTMitsmDzmXL++gmzPhaM5nGSj0Az7X6mSxQ0ILIHoBA==:"
+        },
+        "body": "{\"cartId\":\"c-1\"}",
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": []
+}

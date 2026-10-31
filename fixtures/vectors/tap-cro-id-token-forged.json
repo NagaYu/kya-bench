@@ -1,0 +1,29 @@
+{
+  "id": "tap-cro-id-token-forged",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "consumer_recognition",
+  "description": "ID token signed by a key the mock issuer does not publish",
+  "spec_ref": "SPEC ID token (PS256, kid); mock issuer JWKS",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary\";alg=\"rsa-pss-sha256\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:G+gQxzJJkoFA1Hq0dsDJw2pJFGoSx1AUXVr5aiKzgiAPk2bAJ0EjUonvnnm7CdwpitTAYpAX5rQj4WNZRCQhzzyBkng0mJWUlr1LSV/aurnVCjQxic5K7wl/ilmu1mptTQ5xbV31976Y+cTkbaMEGFY8QgIoGcwXMGrjMslfNmWTPLTOwSdtdsM82547kuOZneUDiUSdm35zpS2E0BCnA1hIpHUtEEHDu86j3eob/4dFXwO3v2nIhUF4aJj1y52uDYBuduqt/cgRJRPbS96TxmPZMTJ6lfeGPqC7jEQkkrA6b6IwR9k0oqnBc9ErET5GrlwB+krV/6pjvSZ4fTioFg==:"
+        },
+        "body": "{\"agenticConsumer\":{\"nonce\":\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\",\"idToken\":\"eyJhbGciOiJQUzI1NiIsImtpZCI6Im1vY2staWR0b2tlbi1rZXktMSIsInR5cCI6IkpXVCtleHQuaWRfdG9rZW4ifQ.eyJpc3MiOiJodHRwczovL2lkdG9rZW4ubW9jay1pc3N1ZXIuZXhhbXBsZSIsInN1YiI6ImNvbnN1bWVyLTdmM2EiLCJhdWQiOiJodHRwczovL21lcmNoYW50LmV4YW1wbGUiLCJpYXQiOjE3ODk5OTk5NDAsImV4cCI6MTc5MDAwMzYwMCwiZW1haWxfbWFzayI6InUqKipAZXhhbXBsZS5jb20iLCJwaG9uZV9udW1iZXJfbWFzayI6IioqKi0qKiotMTIzNCJ9.h0tAd9PxGPumCqVBcJcRAkfk9D9OYWjskGDhqG0_Z3ioSOpsKhmfeKmkLFNO1GTph-WIjZT-IgqePvM7P2tEI9aX7ovBgnPpjPQk3xGnlpivc60G_gIgdm5mAmdD_4Q18-mwIoAJhXSrUx1HTMhaY9jdD_kj6jo49F-ZjHTFFgcjjeNP0V8KTBy-ygD0M-R1kQfQq9G0vfatHcIIog-MhxaxmGgONnejCw7qh0CV5XOtzj4CA7_bIkDrjrh1Ovd0fsv5ILbJ1jiurSTmXiGGEMJ6hpJmpr-JAyRZ32M2_9J2uWTrS7V6Y8pSk3gERDArdAKfMRD3t1m1Rfih7-0FQA\",\"contextualData\":{\"countryCode\":\"US\",\"zip\":\"94105\",\"ipAddress\":\"203.0.113.7\",\"deviceData\":{\"deviceId\":\"dev-01\"}},\"kid\":\"primary\",\"alg\":\"PS256\",\"signature\":\"bhBl1ORR9Y96aRnwXz3_mTR7zi3er42R98cl0e9fnyxiZ4b5NMfDtH1Rhmg-UlropdCWQmI4CM-UvzkEPuVEVGHODAzY9yBkhdbv5e0P6FwbpXqv-uopnkNR2cCoMez49y5lwOzMqOOd_XzVcaDT_KrCnxYXYc8WtUaANxtcuxHaLADygZx9P2M7dKkYF_XXuCZFNtd-wM2DveMYaGOhBeyFVmMIYtZb8j3K0H2sc4uOF4TPMoCcm_wipY14oWrPA5KoQvlZXM2tq2vwmhy5YRcZuilkpwbXmjWKgHnIU8zv9Lc4miBIgN0uhR8B4XnHSZEno0rVhtWhow-PFLtGWQ\"}}",
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": [
+    "TAP_CRO_ID_TOKEN_INVALID"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "tap-payer-tag-on-browse",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "spec_gap",
+  "description": "agent-payer-auth used on a browse operation",
+  "spec_ref": "spec gap TAP-03",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:dpfgmgPvzP51BHusbboWScY38shSWxJeBpTf1EexFKYOoWbYtS3T+GSlqKWMDOgQK5r86fxBdHQx8NTUI6DQBA==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "indeterminate",
+  "expected_reason_codes": [
+    "SPEC_GAP"
+  ]
+}

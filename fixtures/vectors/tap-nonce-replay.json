@@ -1,0 +1,38 @@
+{
+  "id": "tap-nonce-replay",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "replay",
+  "description": "Second request reuses the nonce with the same key",
+  "spec_ref": "REPO nonceCache; SPEC reject a nonce seen in the last 8 minutes",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:Pwev5YcgyEy3Bp+hf0kbIQOpct5pL6042PRnwe29fM6nYR4bH6/gCNAQQErKCMLwHSywEzusMPCuABTdmKmJDg==:"
+        },
+        "operation": "browse"
+      },
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/2",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:9jxOX418xLwGU5zu7NON/jz0EkOR+krafO4xa2SHpmrlrcTGyR8C0XgVWcenryEYQt2VBxHZqzwywx4gbhZDCg==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_NONCE_REPLAY"
+  ]
+}

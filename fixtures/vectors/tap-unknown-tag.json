@@ -1,0 +1,28 @@
+{
+  "id": "tap-unknown-tag",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "tag",
+  "description": "Tag agent-payment-auth is not one of the two defined tags",
+  "spec_ref": "SPEC verification step (a); REPO cdn-proxy comment uses agent-payment-auth",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payment-auth\"",
+          "signature": "sig2=:twjXglWQM387u9uWSl2kA1AQQBIjd+UvK1SOOxeEpz5w8Bhgh0W6X5WnF4gIdhD0eL6wmxJ6IYvJzev73RlRCg==:"
+        },
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_TAG_UNKNOWN"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "tap-payment-rsa-pss-valid",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "valid",
+  "description": "Payment request signed with RSA-PSS-SHA256 under agent-payer-auth",
+  "spec_ref": "REPO rsa-pss-sha256 (PSS.MAX_LENGTH); SPEC tag agent-payer-auth",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary\";alg=\"rsa-pss-sha256\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:rCr3Qw9ZaN6DDqL+h93dnQ44u9RuUTZ7/6/m/Dz1lPxOALpMKi9XpkZk+OTsmdHPzIhm3+fOKnXav/yZeFbOBbxuRe8kUi+x8o9waqpHv2yBu2TtKDoUXlf44QMxQWb6nDGWkgxijz33oYKwAB4+QKkvvtRwZoriCw5z7ye3DD/VpcQutR42LU7QJvFVzgR0UHiveKgJjCCHueDXxotADrbKX4APaXHArXrBjl3Ltns7AQZMuPkXXeNDAEjOJAyqF6mmAmbk437lrPbEFsw9lkdjPfM7itRuEWiQPGqz922jxvcgxM3TAqRriF+ukpHwGq1Rf8Mb/IQT6DGhyqxSmw==:"
+        },
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": []
+}

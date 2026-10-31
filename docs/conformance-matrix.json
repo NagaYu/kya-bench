@@ -1,0 +1,1472 @@
+{
+  "format": "kya-bench-matrix/1",
+  "pins": {
+    "verifiable-intent": "356c29635f1c44df7de02edb58699ca9f29bece6",
+    "AP2": "e1ea56db72a6385bce3e5c1112b3a56ce60acb43",
+    "trusted-agent-protocol": "16d59bdf3f8a542bc538d0962edbb80ea30a02af"
+  },
+  "summary": {
+    "vi": {
+      "reference": "agent-intent/verifiable-intent@356c296 — verify_chain + check_constraints (examples/helpers.py pipeline)",
+      "vectors": 58,
+      "runnable": 55,
+      "agree": 47,
+      "agree_incidental": 29,
+      "diverge": 8,
+      "diverge_verdict": 5,
+      "diverge_spec_gap": 3,
+      "not_runnable": 3,
+      "not_runnable_reasons": {
+        "issuer key discovery (JWKS by iss+kid) is outside verify_chain's API; the vector's iss/kid does not resolve to a key the adapter could pass in": 1,
+        "envelope-level vector: there is no L1/L2 pair to hand to verify_chain": 2
+      }
+    },
+    "tap": {
+      "reference": "visa/trusted-agent-protocol@16d59bd — cdn-proxy/server.js verifySignature (Node)",
+      "vectors": 29,
+      "runnable": 29,
+      "agree": 19,
+      "agree_incidental": 18,
+      "diverge": 10,
+      "diverge_verdict": 7,
+      "diverge_spec_gap": 3,
+      "not_runnable": 0,
+      "not_runnable_reasons": {}
+    },
+    "ap2": {
+      "reference": "google-agentic-commerce/AP2@e1ea56d — Python SDK MandateClient + Checkout/PaymentMandateChain",
+      "vectors": 32,
+      "runnable": 32,
+      "agree": 24,
+      "agree_incidental": 0,
+      "diverge": 8,
+      "diverge_verdict": 1,
+      "diverge_spec_gap": 7,
+      "not_runnable": 0,
+      "not_runnable_reasons": {}
+    },
+    "composition": {
+      "reference": "none",
+      "vectors": 10,
+      "runnable": 0,
+      "agree": 0,
+      "agree_incidental": 0,
+      "diverge": 0,
+      "diverge_verdict": 0,
+      "diverge_spec_gap": 0,
+      "not_runnable": 10,
+      "not_runnable_reasons": {
+        "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)": 10
+      }
+    },
+    "translation": {
+      "reference": "none",
+      "vectors": 12,
+      "runnable": 0,
+      "agree": 0,
+      "agree_incidental": 0,
+      "diverge": 0,
+      "diverge_verdict": 0,
+      "diverge_spec_gap": 0,
+      "not_runnable": 12,
+      "not_runnable_reasons": {
+        "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)": 12
+      }
+    }
+  },
+  "findings": {
+    "VI-M1": {
+      "title": "Reference rejects when L1 card_id differs from payment_instrument.id",
+      "reference": "verification/chain.py step '4c-bis' (commented 'Optional card_id cross-check (SHOULD-level)') returns an error whenever L1 carries card_id and it differs from the mandate's payment_instrument.id.",
+      "spec": "credential-format.md §3.3: card_id is OPTIONAL, an 'Opaque card-level identifier assigned by the Issuer'; payment_instrument.id is an 'Instrument instance identifier (e.g., a token UUID)' (§4.4.2). No section requires them to be equal, and the spec's own examples use card_id 'card-mc-8842' (§3.6) with payment_instrument.id 'f199c3dd-…' (§11).",
+      "assessment": "KYA follows the text. The reference enforces an unwritten binding as a hard failure despite its own 'SHOULD-level' comment. Not a KYA bug; candidate note for the VI Issue."
+    },
+    "TAP-M1": {
+      "title": "Reference only reads the camel-case keyId parameter",
+      "reference": "cdn-proxy/server.js parseRFC9421SignatureInput returns attributes.keyId; with RFC 9421 'keyid' it is undefined, validateKeyId fails and the request is rejected with 'Invalid Key ID Format' before any other check.",
+      "spec": "RFC 9421 §2.3 and the Visa merchant specification page use 'keyid'; RFC 8941 keys are lower-case only. The repo's own merchant-backend verifier also expects 'keyid'. See spec gap TAP-02.",
+      "assessment": "KYA follows RFC 9421 and the Visa page; the reference proxy and agent agree with each other but not with either. Every RFC-spelled TAP vector is rejected for this one reason, so TAP agreements on reject vectors are incidental."
+    },
+    "TAP-M2": {
+      "title": "Reference accepts the keyId spelling that KYA leaves undefined",
+      "reference": "The reference agent emits keyId and the proxy accepts it.",
+      "spec": "Spec gap TAP-02: repo (keyId) vs RFC 9421 / Visa page (keyid).",
+      "assessment": "Expected: the reference resolves the gap in favour of its own spelling. Confirms TAP-02 is a real interoperability split rather than a theoretical one."
+    },
+    "AP2-M1": {
+      "title": "SDK verifies a checkout mandate presented without a payment mandate",
+      "reference": "MandateClient.verify works per chain; the adapter (like the merchant sample) verifies whatever chains are presented.",
+      "spec": "specification.md Modes: 'Verifiers of Mandates always receive a closed Payment and Checkout Mandate, regardless of the mode.' Verification rules are per role (Merchant: checkout; Credential Provider/Network: payment).",
+      "assessment": "Both readings are defensible: KYA, as a neutral whole-transaction verifier, applies the 'always receive both' sentence; a single-role verifier legitimately sees one chain. Recorded as a scoping difference, not a bug on either side."
+    },
+    "AP2-G": {
+      "title": "SDK decides cases KYA leaves undefined",
+      "reference": "AP2-01 cart total vs amount: not compared (accept). AP2-02 mixed flows: accept. AP2-04 decimal max 250.0: treated as minor units (reject). AP2-05 recurrence period: SDK's own period arithmetic (accept). AP2-06 budget: major units, max x 100 (accept). AP2-07 'product' line items: UCP schema validation fails (reject). AP2-08 no revealed acceptable_items: wildcard (accept).",
+      "spec": "See docs/spec-gaps.md AP2-01..AP2-08: in each case the docs are silent or contradict the schema/SDK.",
+      "assessment": "These are the reference's choices where the text does not decide. AP2-04 and AP2-06 together show the unit problem: the SDK reads amount_range.max as minor units but budget.max as major units."
+    },
+    "AP2-O1": {
+      "title": "Observation: the SDK's checkout chain does not recompute checkout_hash on its own",
+      "reference": "CheckoutMandateChain.verify compares checkout_hash only with a caller-supplied expected_checkout_hash; ap2-checkout-hash-mismatch is rejected through the payment chain's transaction_id comparison instead.",
+      "spec": "specification.md Merchant verification: 'Verify that the hash of the Checkout JWT sent for approval matches the value included for the checkout_hash claim.'",
+      "assessment": "Same verdict here, but a merchant that verifies only the checkout chain must recompute the hash itself. Not a divergence; noted for implementers."
+    },
+    "VI-G": {
+      "title": "Spec-gap vectors masked by the card_id check",
+      "reference": "Rejected by VI-M1 before the gap-relevant logic runs.",
+      "spec": "G-02, G-03, G-05.",
+      "assessment": "No information about the reference's handling of these gaps; recorded for completeness."
+    },
+    "TAP-G": {
+      "title": "Spec-gap vectors masked by the keyId check",
+      "reference": "Rejected by TAP-M1 before tag or payment-container handling.",
+      "spec": "TAP-01, TAP-03. The reference implements neither the payment container nor a tag/operation check.",
+      "assessment": "No information beyond TAP-M1."
+    }
+  },
+  "rows": [
+    {
+      "id": "ap2-acceptable-items-undisclosed",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-amount-over-max",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Amount 30000 exceeds maximum 25000",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-amount-range-decimal-max",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "Amount 19900 exceeds maximum 250",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-aud-mismatch",
+      "protocol": "ap2",
+      "category": "binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: KB-SD-JWT aud mismatch: expected 'https://someone-else.example', got 'https://credential-provider.example'",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-budget-cumulative-exceeded",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Cumulative spend 29900 exceeds budget limit 20000 (past spend: 10000)",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-budget-unit-ambiguous",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-cart-total-mismatch",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-checkout-hash-mismatch",
+      "protocol": "ap2",
+      "category": "mandate",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Payment transaction_id mismatch: expected AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, got 08uVjfq4CGuLFv6UO0zQSd-J1yjQXO_rJPon5RQhOw8",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-closed-not-signed-by-cnf-agent",
+      "protocol": "ap2",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "InvalidJWSSignature: Verification failed for all signatures[\"Failed: [InvalidJWSSignature('Verification failed')]\"]",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-hnp-issuer-jwt-hash",
+      "protocol": "ap2",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-hnp-valid",
+      "protocol": "ap2",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-hp-valid",
+      "protocol": "ap2",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-line-item-product-shape",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "checkout_jwt payload failed schema validation: 1 validation error for Checkout\nline_items.0.item\n  Field required [type=missing, input_value={'id': 'li_1', 'product':...tal', 'amount': 19900}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-line-items-extra-item",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Item socks not in any requirement's acceptable items",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-malformed-chain",
+      "protocol": "ap2",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: Malformed SD-JWT: missing disclosure separator",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-merchant-not-allowed",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Merchant Shady Store not in allowed list; Payee Shady Store not in allowed list",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-mixed-flows",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-no-merchant-revealed",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Merchant Demo Merchant not in allowed list",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-open-mandate-expired",
+      "protocol": "ap2",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: Token 0 expired at 1789999600",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-payee-not-allowed",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Payee Shady Store not in allowed list",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-payment-mandate-missing",
+      "protocol": "ap2",
+      "category": "mandate",
+      "kya_expected": "reject",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout']",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "AP2-M1"
+    },
+    {
+      "id": "ap2-payment-reference-mismatch",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "PaymentReference mismatch: expected open checkout hash CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC, got hCYcKi_OHyVzNMssRGvfwMcYu_TSu9wqkz7BLseT-As",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-preset-claim-changed",
+      "protocol": "ap2",
+      "category": "mandate",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Pre-set payment_instrument mismatch",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-recurrence-period-undefined",
+      "protocol": "ap2",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "verified ['checkout', 'payment']",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "AP2-G"
+    },
+    {
+      "id": "ap2-root-bad-signature",
+      "protocol": "ap2",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "InvalidJWSSignature: Verification failed for all signatures[\"Failed: [InvalidJWSSignature('Verification failed')]\"]",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-root-key-untrusted",
+      "protocol": "ap2",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: kid 'unknown-provider' not in the trust list",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-sd-hash-mismatch",
+      "protocol": "ap2",
+      "category": "binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: sd_hash mismatch: expected 'hCYcKi_OHyVzNMssRGvfwMcYu_TSu9wqkz7BLseT-As', got 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-terminal-carries-cnf",
+      "protocol": "ap2",
+      "category": "binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: Terminal KB-SD-JWT MUST NOT carry a 'cnf' claim",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-terminal-wrong-typ",
+      "protocol": "ap2",
+      "category": "binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "ValueError: Unexpected JWT typ: expected one of ['kb+sd-jwt', 'kb-sd-jwt', 'kb+sd-jwt+kb', 'kb-sd-jwt+kb'], got 'JWT'",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-transaction-id-mismatch",
+      "protocol": "ap2",
+      "category": "mandate",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Payment transaction_id mismatch: expected 08uVjfq4CGuLFv6UO0zQSd-J1yjQXO_rJPon5RQhOw8, got BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-unknown-constraint",
+      "protocol": "ap2",
+      "category": "scope",
+      "kya_expected": "reject",
+      "reference": "error",
+      "reference_detail": "chain.verify raised ValidationError: 17 validation errors for OpenPaymentMandate\nconstraints.0.AgentRecurrence.type\n  Input should be 'payment.agent_recurrence' [type=literal_error, input_value='com.acme.loyalty', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/literal_error\nconstraints.0.AgentRecurrence.frequency\n  Field required [type=missing, input_value={'t",
+      "status": "agree"
+    },
+    {
+      "id": "ap2-unknown-vct",
+      "protocol": "ap2",
+      "category": "mandate",
+      "kya_expected": "reject",
+      "reference": "error",
+      "reference_detail": "chain.verify raised ValidationError: 1 validation error for PaymentMandate\nvct\n  Input should be 'mandate.payment.1' [type=literal_error, input_value='mandate.payment.2', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/literal_error",
+      "status": "agree"
+    },
+    {
+      "id": "autonomous-l2-only",
+      "protocol": "vi",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "VI-M1"
+    },
+    {
+      "id": "autonomous-multi-pair",
+      "protocol": "vi",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "VI-M1"
+    },
+    {
+      "id": "autonomous-valid",
+      "protocol": "vi",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "VI-M1"
+    },
+    {
+      "id": "budget-cumulative-exceeded",
+      "protocol": "vi",
+      "category": "budget",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "budget-cumulative-within",
+      "protocol": "vi",
+      "category": "budget",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "VI-M1"
+    },
+    {
+      "id": "budget-without-network-state",
+      "protocol": "vi",
+      "category": "budget",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "VI-G"
+    },
+    {
+      "id": "comp-ap2-agent-unregistered",
+      "protocol": "composition",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-ap2-only",
+      "protocol": "composition",
+      "category": "identity_layer",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-ap2-rejects",
+      "protocol": "composition",
+      "category": "binding",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-browse-tag-payment",
+      "protocol": "composition",
+      "category": "binding",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-hp-without-agent-key",
+      "protocol": "composition",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-presenter-mismatch",
+      "protocol": "composition",
+      "category": "binding",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-revoked-presenter",
+      "protocol": "composition",
+      "category": "binding",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-tap-ap2-bound",
+      "protocol": "composition",
+      "category": "binding",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-tap-only-browse",
+      "protocol": "composition",
+      "category": "identity_layer",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "comp-tap-payment-with-container",
+      "protocol": "composition",
+      "category": "identity_layer",
+      "kya_expected": "indeterminate",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'composition' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "constraint-agent-recurrence-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-allowed-merchants-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-allowed-payees-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-amount-exceeded",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-budget-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-line-items-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-recurrence-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "constraint-reference-violated",
+      "protocol": "vi",
+      "category": "constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Orphaned payment mandate: conditional_transaction_id does not match any checkout disclosure",
+      "status": "agree"
+    },
+    {
+      "id": "engine-unknown-non-open-permissive",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "accept",
+      "reference": "accept",
+      "reference_detail": "checked=[] skipped=['com.acme.loyalty-points']",
+      "status": "agree"
+    },
+    {
+      "id": "engine-unknown-non-open-strict",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Unknown constraint type: com.acme.loyalty-points",
+      "status": "agree"
+    },
+    {
+      "id": "engine-unknown-open-permissive",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Unknown constraint type: com.acme.loyalty-points",
+      "status": "agree"
+    },
+    {
+      "id": "gap-g02-checkout-jwt-without-merchant-id",
+      "protocol": "vi",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "VI-G"
+    },
+    {
+      "id": "gap-g03-line-items-sku-shape",
+      "protocol": "vi",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "VI-G"
+    },
+    {
+      "id": "immediate-cnf-present",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Immediate mode payment mandate must not contain cnf claim (cnf is for autonomous delegation only)",
+      "status": "agree"
+    },
+    {
+      "id": "immediate-transaction-id-mismatch",
+      "protocol": "vi",
+      "category": "cross_ref",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "Orphaned checkout mandate: no payment mandate with matching transaction_id",
+      "status": "agree"
+    },
+    {
+      "id": "immediate-valid",
+      "protocol": "vi",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "VI-M1"
+    },
+    {
+      "id": "immediate-with-constraints",
+      "protocol": "vi",
+      "category": "mode",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "immediate-with-l3",
+      "protocol": "vi",
+      "category": "mode",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L3 credentials provided but L2 contains only immediate-mode (final) mandates",
+      "status": "agree"
+    },
+    {
+      "id": "l1-bad-signature",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 signature verification failed",
+      "status": "agree"
+    },
+    {
+      "id": "l1-expired",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 credential expired at 1789996400",
+      "status": "agree"
+    },
+    {
+      "id": "l1-unknown-kid",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "issuer key discovery (JWKS by iss+kid) is outside verify_chain's API; the vector's iss/kid does not resolve to a key the adapter could pass in"
+    },
+    {
+      "id": "l2-autonomous-cnf-missing",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l2-autonomous-outlives-l1",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l2-cnf-pair-mismatch",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l2-expired",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 expired at 1789999600",
+      "status": "agree"
+    },
+    {
+      "id": "l2-iat-in-future",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 iat is in the future: 1790000400",
+      "status": "agree"
+    },
+    {
+      "id": "l2-payload-tampered",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 signature verification failed (user key mismatch)",
+      "status": "agree"
+    },
+    {
+      "id": "l2-sd-hash-l1-presentation-changed",
+      "protocol": "vi",
+      "category": "sd_hash",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 sd_hash does not match L1 serialized form",
+      "status": "agree"
+    },
+    {
+      "id": "l2-sd-hash-mismatch",
+      "protocol": "vi",
+      "category": "sd_hash",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 sd_hash does not match L1 serialized form",
+      "status": "agree"
+    },
+    {
+      "id": "l2-typ-mode-mismatch",
+      "protocol": "vi",
+      "category": "mode",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 header typ must be 'kb-sd-jwt+kb', got str 'kb-sd-jwt'",
+      "status": "agree"
+    },
+    {
+      "id": "l2-wrong-signer",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 signature verification failed (user key mismatch)",
+      "status": "agree"
+    },
+    {
+      "id": "l3-cnf-present",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3-cross-reference-mismatch",
+      "protocol": "vi",
+      "category": "cross_ref",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3-header-jwk",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3-kid-mismatch",
+      "protocol": "vi",
+      "category": "key_binding",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3-lifetime-over-1h",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3a-expired",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3a-sd-hash-wrong-view",
+      "protocol": "vi",
+      "category": "sd_hash",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3a-wrong-agent-key",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3b-checkout-hash-mismatch",
+      "protocol": "vi",
+      "category": "cross_ref",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3b-expired",
+      "protocol": "vi",
+      "category": "expiry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3b-signature-tampered",
+      "protocol": "vi",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "l3b-view-foreign-disclosure",
+      "protocol": "vi",
+      "category": "sd_hash",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "malformed-bundle-not-json",
+      "protocol": "vi",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "envelope-level vector: there is no L1/L2 pair to hand to verify_chain"
+    },
+    {
+      "id": "malformed-disclosure-not-base64",
+      "protocol": "vi",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "decode_sd_jwt: 'utf-8' codec can't decode byte 0x9e in position 0: invalid start byte",
+      "status": "agree"
+    },
+    {
+      "id": "malformed-l2-no-trailing-tilde",
+      "protocol": "vi",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "malformed-missing-l1",
+      "protocol": "vi",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "envelope-level vector: there is no L1/L2 pair to hand to verify_chain"
+    },
+    {
+      "id": "malformed-unreferenced-disclosure",
+      "protocol": "vi",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "mixed-mode-mandates",
+      "protocol": "vi",
+      "category": "mode",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L2 contains both open (autonomous) and final (immediate) mandate VCTs — open mandates are not allowed in immediate mode",
+      "status": "agree"
+    },
+    {
+      "id": "open-mandate-unknown-constraint-permissive",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "open-mandate-unknown-constraint-unfulfilled",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "open-mandate-unknown-constraint",
+      "protocol": "vi",
+      "category": "unknown_constraint",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "L1 card_id (card-mc-8842) does not match payment_instrument.id (f199c3dd-7106-478b-9b5f-7af9ca725170)",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-alg-key-mismatch",
+      "protocol": "tap",
+      "category": "registry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-apc-missing-kid",
+      "protocol": "tap",
+      "category": "payment_container",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-apc-nonce-mismatch",
+      "protocol": "tap",
+      "category": "payment_container",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-apc-signature-undefined",
+      "protocol": "tap",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "TAP-G"
+    },
+    {
+      "id": "tap-browse-ed25519-valid",
+      "protocol": "tap",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-browse-tag-on-payment",
+      "protocol": "tap",
+      "category": "tag",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-content-digest-covered-valid",
+      "protocol": "tap",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-content-digest-mismatch",
+      "protocol": "tap",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-created-in-future",
+      "protocol": "tap",
+      "category": "time",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-cro-id-token-forged",
+      "protocol": "tap",
+      "category": "consumer_recognition",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-cro-nonce-mismatch",
+      "protocol": "tap",
+      "category": "consumer_recognition",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-cro-valid",
+      "protocol": "tap",
+      "category": "consumer_recognition",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-expired",
+      "protocol": "tap",
+      "category": "time",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-malformed-signature-input",
+      "protocol": "tap",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔐 Invalid RFC 9421 Signature Input: Could not parse signature-input header. Expected RFC 9421 format.",
+      "status": "agree"
+    },
+    {
+      "id": "tap-missing-nonce",
+      "protocol": "tap",
+      "category": "params",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-missing-signature-headers",
+      "protocol": "tap",
+      "category": "malformed",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-nonce-replay",
+      "protocol": "tap",
+      "category": "replay",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-nonce-reused-by-other-key",
+      "protocol": "tap",
+      "category": "replay",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-path-not-covered",
+      "protocol": "tap",
+      "category": "params",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-payer-tag-on-browse",
+      "protocol": "tap",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "TAP-G"
+    },
+    {
+      "id": "tap-payment-rsa-pss-valid",
+      "protocol": "tap",
+      "category": "valid",
+      "kya_expected": "accept",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "diverge",
+      "kind": "verdict",
+      "finding": "TAP-M1"
+    },
+    {
+      "id": "tap-repo-keyId-parameter",
+      "protocol": "tap",
+      "category": "spec_gap",
+      "kya_expected": "indeterminate",
+      "reference": "accept",
+      "reference_detail": "1 request(s) passed verifySignature",
+      "status": "diverge",
+      "kind": "spec_gap",
+      "finding": "TAP-M2"
+    },
+    {
+      "id": "tap-revoked-agent",
+      "protocol": "tap",
+      "category": "registry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-revoked-key",
+      "protocol": "tap",
+      "category": "registry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-signature-tampered-path",
+      "protocol": "tap",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-signed-by-other-key",
+      "protocol": "tap",
+      "category": "signature",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-unknown-keyid",
+      "protocol": "tap",
+      "category": "registry",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-unknown-tag",
+      "protocol": "tap",
+      "category": "tag",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "tap-window-over-8-minutes",
+      "protocol": "tap",
+      "category": "time",
+      "kya_expected": "reject",
+      "reference": "reject",
+      "reference_detail": "403 🔑 Invalid Key ID Format: The key ID contains invalid characters or is too long.",
+      "status": "agree",
+      "incidental": true
+    },
+    {
+      "id": "xlate-below-min",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-currency-mismatch",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-decimal-max",
+      "protocol": "translation",
+      "category": "undecided",
+      "kya_expected": "indeterminate",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-empty-allowlist",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-expired",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-in-range",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-merchant-by-name-website",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-merchant-outside",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-over-max",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-undisclosed-allowlist",
+      "protocol": "translation",
+      "category": "divergence",
+      "kya_expected": "reject",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-unsupported-type",
+      "protocol": "translation",
+      "category": "undecided",
+      "kya_expected": "indeterminate",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    },
+    {
+      "id": "xlate-within-clock-skew",
+      "protocol": "translation",
+      "category": "agree",
+      "kya_expected": "accept",
+      "status": "not_runnable",
+      "reason": "no reference implementation exists for 'translation' (KYA Bench's own cross-protocol construction)"
+    }
+  ]
+}

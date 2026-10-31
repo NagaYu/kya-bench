@@ -1,0 +1,55 @@
+{
+  "id": "xlate-below-min",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "agree",
+  "description": "Amount below min on both sides",
+  "spec_ref": "AP2 Amount Range ~ VI C \u00a74.4",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "min": 1000,
+          "max": 25000
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "id": "merchant_1",
+              "name": "Demo Merchant",
+              "website": "https://demo-merchant.example"
+            },
+            {
+              "name": "Second Merchant",
+              "website": "https://second-merchant.example"
+            }
+          ]
+        }
+      ],
+      "exp": 1790003600
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 500,
+        "currency": "USD"
+      },
+      "merchant": {
+        "id": "merchant_1",
+        "name": "Demo Merchant",
+        "website": "https://demo-merchant.example"
+      }
+    }
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": [
+    "XLATE_EQUIVALENT",
+    "XLATE_BOTH_REJECT"
+  ]
+}

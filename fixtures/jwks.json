@@ -1,0 +1,40 @@
+{
+  "https://issuer.example.com": {
+    "keys": [
+      {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "CAYLa66qoStB0540VKifjkV-g4hZeemWTbnKXmtcu_I",
+        "y": "LNTXjJ0mmtjBlYXUU0tR7mP-37YCCeq2fNau2aseaHM",
+        "kid": "issuer-key-1",
+        "use": "sig",
+        "alg": "ES256"
+      }
+    ]
+  },
+  "https://agent-provider.example": {
+    "keys": [
+      {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "rgrObd8mvkkmyLzcSmmlKuerIoh00HAtxS5BioV8x_c",
+        "y": "ocI4Zf4ul1Q5YUb7b9dhnZGRdHfmw88cI7zXJtlWlyg",
+        "kid": "agent-provider-key-1",
+        "use": "sig",
+        "alg": "ES256"
+      }
+    ]
+  },
+  "https://idtoken.mock-issuer.example": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "kid": "mock-idtoken-key-1",
+        "use": "sig",
+        "alg": "PS256",
+        "n": "tuy1TmU1jjqqD9tpGsWtWd9UVc0pNp2clIOMS7j1xJuDDJsVF3tPOdir7mp6Rz4c9Chi3ATSIkY1dvcfCKMVcW-vGPKuPegn433LLKykAXydHKuPWQA1LteJfbgbGtev0LZbC11DdrIJfcgtLmuukzfj_kCWtoF6DN5XgWI1as9T-Uv0DKBRmL2uut9bbV5WF3ZnBNxbSDeDCEUaxygIef5vTox5ooaANoK2L20EdrLjeQANHCCWn9qOEjskR34pUvBVoJOvAR-IU6A4jbsytoEm8d80xkk76ovwOM-T00a3n8PeBf7iqfD7x7XKnShyHGTWlrRNBL2XgQV39WSZmw",
+        "e": "AQAB"
+      }
+    ]
+  }
+}

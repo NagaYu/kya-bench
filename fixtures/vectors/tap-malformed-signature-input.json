@@ -1,0 +1,28 @@
+{
+  "id": "tap-malformed-signature-input",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "malformed",
+  "description": "Signature-Input is not a structured dictionary",
+  "spec_ref": "RFC 8941 \u00a73.2",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\";created=1",
+          "signature": "sig2=:Pwev5YcgyEy3Bp+hf0kbIQOpct5pL6042PRnwe29fM6nYR4bH6/gCNAQQErKCMLwHSywEzusMPCuABTdmKmJDg==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_SIGNATURE_INPUT_MALFORMED"
+  ]
+}

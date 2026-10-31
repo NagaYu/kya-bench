@@ -1,0 +1,48 @@
+{
+  "id": "xlate-undisclosed-allowlist",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "divergence",
+  "description": "Every allowlist entry undisclosed: AP2 fails the constraint, VI skips it",
+  "spec_ref": "AP2 checkout_mandate.md vs VI C \u00a74.1 step 3 (XP-03)",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "min": 1000,
+          "max": 25000
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "...": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+            }
+          ]
+        }
+      ],
+      "exp": 1790003600
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 19900,
+        "currency": "USD"
+      },
+      "merchant": {
+        "id": "merchant_1",
+        "name": "Demo Merchant",
+        "website": "https://demo-merchant.example"
+      }
+    }
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "XLATE_DIVERGENT"
+  ]
+}

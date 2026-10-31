@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kya-bench"
+version = "0.1.0"
+description = "Neutral conformance verifier for agent payment protocols (Phase 1: Mastercard Verifiable Intent)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    # ES256 (ECDSA P-256 / SHA-256) and JWK handling. SD-JWT / JWS framing is
+    # implemented in-package so verification is fully auditable.
+    "cryptography>=43",  # 43+: RFC 6979 deterministic ECDSA for reproducible vectors
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+kya-bench = "kya_bench.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+xfail_strict = true
+addopts = "-ra"

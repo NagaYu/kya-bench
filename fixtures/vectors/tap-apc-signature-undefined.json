@@ -1,0 +1,29 @@
+{
+  "id": "tap-apc-signature-undefined",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "spec_gap",
+  "description": "Structurally valid payment container whose signature base is undefined",
+  "spec_ref": "spec gap TAP-01; SPEC Agentic Payment Container",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary\";alg=\"rsa-pss-sha256\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-payer-auth\"",
+          "signature": "sig2=:rCr3Qw9ZaN6DDqL+h93dnQ44u9RuUTZ7/6/m/Dz1lPxOALpMKi9XpkZk+OTsmdHPzIhm3+fOKnXav/yZeFbOBbxuRe8kUi+x8o9waqpHv2yBu2TtKDoUXlf44QMxQWb6nDGWkgxijz33oYKwAB4+QKkvvtRwZoriCw5z7ye3DD/VpcQutR42LU7QJvFVzgR0UHiveKgJjCCHueDXxotADrbKX4APaXHArXrBjl3Ltns7AQZMuPkXXeNDAEjOJAyqF6mmAmbk437lrPbEFsw9lkdjPfM7itRuEWiQPGqz922jxvcgxM3TAqRriF+ukpHwGq1Rf8Mb/IQT6DGhyqxSmw==:"
+        },
+        "body": "{\"agenticPaymentContainer\":{\"nonce\":\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\",\"cardMetadata\":{\"lastFour\":\"1234\",\"paymentAccountReference\":\"V0010013018326012345678901234\",\"shortDescription\":\"Visa \\u00b7\\u00b7\\u00b7\\u00b7 1234\"},\"kid\":\"primary\",\"alg\":\"PS256\",\"signature\":\"l4JwW-TGIH9vGehtydV8T0G8GgDxenuvVhE7GRdW4lTiXDvwGUq7ibiVeGfmrAJ23XyuKfB16sajT23UmvkCB_HqooLgXkBwgcaVad2E2lcJMkRS_MoYC4PzXkq2z6Q9Qqo99mJIIjO_FZ6Nuae_UZrhmugKYJC9Omj9rh1C1SACcqMKOYduvPTTDwdKR16Ay0OVC37kI3mRNQet8IMZtNDN9H2lDVfJ-U04pOJ04lkdye_DQPidz_2W5gU9RRAMH2JO2vw_QXtgDT3Jw_x-iikNWWHIGooagr0Qy6wI1-45v_kbzBYWeSAVYOMz5U-pmDdwR_zSx_BEfxggNziKfg\"}}",
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "indeterminate",
+  "expected_reason_codes": [
+    "SPEC_GAP"
+  ]
+}

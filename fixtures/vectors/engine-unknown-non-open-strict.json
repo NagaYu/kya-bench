@@ -1,0 +1,25 @@
+{
+  "id": "engine-unknown-non-open-strict",
+  "protocol": "vi",
+  "kind": "constraint_check",
+  "category": "unknown_constraint",
+  "description": "Constraint engine called directly with is_open_mandate=false under STRICT: rejected",
+  "spec_ref": "C \u00a75.3, \u00a75.4 STRICT",
+  "strictness": "strict",
+  "now": 1790000000,
+  "constraint_check": {
+    "constraints": [
+      {
+        "type": "com.acme.loyalty-points",
+        "points": 500
+      }
+    ],
+    "fulfillment": null,
+    "is_open_mandate": false,
+    "mandate": "payment"
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "CONSTRAINT_UNKNOWN_STRICT"
+  ]
+}

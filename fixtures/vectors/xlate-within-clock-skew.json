@@ -1,0 +1,55 @@
+{
+  "id": "xlate-within-clock-skew",
+  "protocol": "translation",
+  "kind": "translation",
+  "category": "agree",
+  "description": "Intent expired 200 s ago (inside the skew)",
+  "spec_ref": "both apply a 300 s skew",
+  "strictness": "strict",
+  "now": 1790000000,
+  "translation": {
+    "intent": {
+      "payment_constraints": [
+        {
+          "type": "payment.amount_range",
+          "currency": "USD",
+          "min": 1000,
+          "max": 25000
+        }
+      ],
+      "checkout_constraints": [
+        {
+          "type": "checkout.allowed_merchants",
+          "allowed": [
+            {
+              "id": "merchant_1",
+              "name": "Demo Merchant",
+              "website": "https://demo-merchant.example"
+            },
+            {
+              "name": "Second Merchant",
+              "website": "https://second-merchant.example"
+            }
+          ]
+        }
+      ],
+      "exp": 1789999800
+    },
+    "probe": {
+      "payment_amount": {
+        "amount": 19900,
+        "currency": "USD"
+      },
+      "merchant": {
+        "id": "merchant_1",
+        "name": "Demo Merchant",
+        "website": "https://demo-merchant.example"
+      }
+    }
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": [
+    "XLATE_EQUIVALENT",
+    "XLATE_BOTH_ACCEPT"
+  ]
+}

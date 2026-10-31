@@ -1,0 +1,28 @@
+{
+  "id": "tap-browse-tag-on-payment",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "tag",
+  "description": "agent-browser-auth used on a payment operation",
+  "spec_ref": "SPEC tag binds the operation; REPO payer tag for checkout",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "POST",
+        "authority": "merchant.example",
+        "path": "/cart/checkout",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:2o0IrFjhZh/SZB4HOUbs8nTwxxOHG1H8dGgqEgpGQ1H3CJU4HoGZNKCIixfTLZVspjfF1YSFW+L9ZdVFwMWXAA==:"
+        },
+        "operation": "payment"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_TAG_OPERATION_MISMATCH"
+  ]
+}

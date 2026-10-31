@@ -1,0 +1,36 @@
+{
+  "id": "tap-nonce-reused-by-other-key",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "replay",
+  "description": "Same nonce under two different keys is not a replay",
+  "spec_ref": "KYA replay key = (keyid, nonce); spec gap notes TAP-N3",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:Pwev5YcgyEy3Bp+hf0kbIQOpct5pL6042PRnwe29fM6nYR4bH6/gCNAQQErKCMLwHSywEzusMPCuABTdmKmJDg==:"
+        },
+        "operation": "browse"
+      },
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/2",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"other-ed25519\";alg=\"ed25519\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:hLvkpQqw3WbB/o4ktwhyrWOu6FYXwHtIA65vsmo8lQJj2i2Xcpr8xhSbUbQeX6HluZidxrwAijmHOur6cNFqBQ==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "accept",
+  "expected_reason_codes": []
+}

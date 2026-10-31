@@ -1,0 +1,70 @@
+{
+  "agents": [
+    {
+      "id": 1,
+      "name": "Shopping Agent",
+      "domain": "shopping-agent.example",
+      "is_active": "true",
+      "keys": [
+        {
+          "key_id": "primary-ed25519",
+          "algorithm": "ed25519",
+          "public_key": "Ob/mJzcUpoEsE8jD0COgstDmTQgnOC+JfXjA9h80mXs=",
+          "is_active": "true"
+        },
+        {
+          "key_id": "primary",
+          "algorithm": "rsa-pss-sha256",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsce3kavVVZ72DRFA+CKd\nJkArlkULe8/yyp0/oq73epGgBEy9iS0tyDK4pmvfP7Alp1SWGutU+AN7M6v9bXtd\nbYcMYOFR85l9x/y38AgUtBGWcVQIHLS2Ie1YsxH3sN0G3JhEpsVWhXj1jgqDV5JP\npNsYUR3BBlFU0XH0hScgZhO7iUM6k+PjY6v9m3Qm1NtmlWCMU0paYgN4sOECJ1Lw\n3lKkvMpy428mFsXq/xCOUcrQ7FLdhWZlgakO+kUqjCWFGbKUJ4r1mJQwEm87ecEo\ncdCTLPDemsfWOnM9uZgsTjV7pWm87JBiVun3lh3tNbv9xNgTIxMYQmbW5v6B3XJx\nKwIDAQAB\n-----END PUBLIC KEY-----\n",
+          "is_active": "true"
+        },
+        {
+          "key_id": "old-ed25519",
+          "algorithm": "ed25519",
+          "public_key": "NZoi3lXwWa9+hQO7N8aSzFJDRG/ivGicncs64HFd1Lk=",
+          "is_active": "false"
+        },
+        {
+          "key_id": "shopping-agent-ap2",
+          "algorithm": "ES256",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERZKHqebrTunxy548WwCe1SCYf55l\nszfx4N+JXU8q4R7yIY0EetrNmEMcr1EwPLLwHQ8t7b7Yp/n1C2ie0NyPzA==\n-----END PUBLIC KEY-----\n",
+          "is_active": "true"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Other Agent",
+      "domain": "other-agent.example",
+      "is_active": "true",
+      "keys": [
+        {
+          "key_id": "other-ed25519",
+          "algorithm": "ed25519",
+          "public_key": "ITonUntOy6K6HDBvYjJg68MG65lfOU5MDNCy/r8l2bc=",
+          "is_active": "true"
+        },
+        {
+          "key_id": "other-agent-ap2",
+          "algorithm": "ES256",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEz9qazC8B14H+KBvP66dMksOZ4uuu\npvc4kjoiXEP+EaAxEZgu4JOlIMHVjyOZwgcvlSXK4gF3g57UBb79xNbMmg==\n-----END PUBLIC KEY-----\n",
+          "is_active": "true"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Revoked Agent",
+      "domain": "revoked-agent.example",
+      "is_active": "false",
+      "keys": [
+        {
+          "key_id": "revoked-agent-key",
+          "algorithm": "ed25519",
+          "public_key": "rE45jaMiuJEKFYgHYiCcP8+0ShjKXjMibaa6ivIpuOk=",
+          "is_active": "true"
+        }
+      ]
+    }
+  ]
+}

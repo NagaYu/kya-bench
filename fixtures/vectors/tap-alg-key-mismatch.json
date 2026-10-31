@@ -1,0 +1,28 @@
+{
+  "id": "tap-alg-key-mismatch",
+  "protocol": "tap",
+  "kind": "bundle",
+  "category": "registry",
+  "description": "alg rsa-pss-sha256 declared for a registered Ed25519 key",
+  "spec_ref": "RFC 9421 \u00a73.3.7; REPO algorithm per key",
+  "strictness": "strict",
+  "now": 1790000000,
+  "bundle": {
+    "requests": [
+      {
+        "method": "GET",
+        "authority": "merchant.example",
+        "path": "/products/1",
+        "headers": {
+          "signature-input": "sig2=(\"@authority\" \"@path\");created=1789999970;expires=1790000450;keyid=\"primary-ed25519\";alg=\"rsa-pss-sha256\";nonce=\"a5e3f0d2-6c1b-4e8a-9f7d-2b4c6e8a0f13\";tag=\"agent-browser-auth\"",
+          "signature": "sig2=:SFQnQzoa/XfABUuPCoYGuGt8Xu/7zKD/DNW4it4ZrOp+zQ8FdWLequvF7GYJiKWGZ8wfWYZMxQorjHLKAFhiUvVtIWpqTrekLvqYVfF50I2TWLMYrHQfLHxfOvyVg4L6hNt2nLnLoCDQdNf0UJGP6PWMvM8eEwVP60BvI5udrw+5IuMYrZHBLq/4pTRbjh909o4jmUh7xXALgwIyLZjq0z1xQTNXz1Y+jkIrrSGJ4AIaW5jgP6+vJXpJP3QDhWwKFnZJZ5d1uQAhXOV7GXTsEUn5WtBlXkltjJUB/F8pT8psc84F0CxlPcGHZsBDT3J3xw08UFsLmMjtFQTC9CnZMg==:"
+        },
+        "operation": "browse"
+      }
+    ]
+  },
+  "expected_verdict": "reject",
+  "expected_reason_codes": [
+    "TAP_ALG_KEY_MISMATCH"
+  ]
+}
