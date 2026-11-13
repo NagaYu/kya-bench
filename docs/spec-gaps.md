@@ -300,7 +300,11 @@ RFC 9901 を厳格に適用すると、VI の規範例そのものも、参照�
 ## AP2-04 `amount_range` の数値（矛盾）
 
 - **箇所**: `open_payment_mandate.json` は `min` / `max` を整数（最小単位）と定義する。`payment_mandate.md` の例は `"max": 100.50`。
-- **KYA Bench の挙動**: 整数でない数値が来たら `indeterminate`（AP2-04）。
+- **二つのケース**（いずれも pinned commit `e1ea56d` の SDK 自身のモデルで robertolocatelli81-dev が計測）:
+  1. `"max": 100.50`（文書の例そのままの形）は `AmountRange.model_validate` の `int` フィールドで `ValidationError` を送出し、そもそも読み込めない。文書の例を SDK が拒否するのは、同じギャップのより強い現れ方である。
+  2. `"max": 250.0` は暗黙に `250` へ丸められる。ベクタ `ap2-amount-range-decimal-max` はこの形を使っており、SDK は 250 最小単位と読んで 19900 の支払いを拒否する。
+- **KYA Bench の挙動**: 整数でない数値が来たら `indeterminate`（AP2-04）。250 / 19900 のケースは単位が未確定である間は `indeterminate` のままとする（x402-foundation/x402#2452 と一貫）。
+- **出典**: AP2 #389 への robertolocatelli81-dev の 2026-11-03 コメント。
 
 ## AP2-05 `agent_recurrence`（未定義）
 
