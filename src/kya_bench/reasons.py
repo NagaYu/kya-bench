@@ -23,6 +23,7 @@ class Code(StrEnum):
     BUNDLE_INVALID = "BUNDLE_INVALID"
     BUNDLE_UNKNOWN_FIELD = "BUNDLE_UNKNOWN_FIELD"
     LAYER_MISSING = "LAYER_MISSING"
+    INPUT_TOO_DEEPLY_NESTED = "INPUT_TOO_DEEPLY_NESTED"
 
     # --- SD-JWT / JWS framing ------------------------------------------
     SDJWT_NOT_ASCII = "SDJWT_NOT_ASCII"

@@ -1,0 +1,142 @@
+{
+  "total_probes": 681,
+  "by_line": {
+    "1": {
+      "caught": 29,
+      "evasion": 0,
+      "spec_ambiguity": 1,
+      "false_positive": 0,
+      "generator_error": 0
+    },
+    "2": {
+      "caught": 22,
+      "evasion": 0,
+      "spec_ambiguity": 1,
+      "false_positive": 0,
+      "generator_error": 0
+    },
+    "3": {
+      "caught": 9,
+      "evasion": 0,
+      "spec_ambiguity": 1,
+      "false_positive": 0,
+      "generator_error": 0
+    },
+    "4": {
+      "caught": 14,
+      "evasion": 0,
+      "spec_ambiguity": 0,
+      "false_positive": 0,
+      "generator_error": 0
+    },
+    "5": {
+      "caught": 7,
+      "evasion": 4,
+      "spec_ambiguity": 0,
+      "false_positive": 0,
+      "generator_error": 0
+    },
+    "6": {
+      "caught": 593,
+      "evasion": 0,
+      "spec_ambiguity": 0,
+      "false_positive": 0,
+      "generator_error": 0
+    }
+  },
+  "totals": {
+    "caught": 674,
+    "evasion": 4,
+    "spec_ambiguity": 3,
+    "false_positive": 0,
+    "generator_error": 0
+  },
+  "findings": [
+    {
+      "line": 5,
+      "name": "non-ascii in SD-JWT serialization",
+      "bucket": "evasion",
+      "expect": "reject",
+      "observed": "CRASH:UnicodeEncodeError",
+      "note": "verify raised instead of failing closed (parser.py/verifier.py promise 'never raises'; attack line 5 requires reject/indeterminate, never a crash)",
+      "codes": [],
+      "gaps": []
+    },
+    {
+      "line": 5,
+      "name": "deep nesting via disclosure value (resolve walk)",
+      "bucket": "evasion",
+      "expect": "not_accept",
+      "observed": "CRASH:RecursionError",
+      "note": "recursive resolve_disclosures.walk raised instead of failing closed",
+      "codes": [],
+      "gaps": []
+    },
+    {
+      "line": 5,
+      "name": "deep nesting via verify(bundle)",
+      "bucket": "evasion",
+      "expect": "not_accept",
+      "observed": "CRASH:RecursionError",
+      "note": "end-to-end verify() on a deeply nested (signed) payload verify raised instead of failing closed (parser.py/verifier.py promise 'never raises'; attack line 5 requires reject/indeterminate, never a crash)",
+      "codes": [],
+      "gaps": []
+    },
+    {
+      "line": 5,
+      "name": "minimal crash depth (resolve walk) = 991",
+      "bucket": "evasion",
+      "expect": "not_accept",
+      "observed": "RecursionError at depth 991",
+      "note": "smallest nesting that crashes the recursive disclosure walk",
+      "codes": [],
+      "gaps": []
+    }
+  ],
+  "spec_ambiguities": [
+    {
+      "line": 1,
+      "name": "ap2 amount_range decimal max 250.0",
+      "bucket": "spec_ambiguity",
+      "expect": "indeterminate",
+      "observed": "indeterminate",
+      "note": "recorded gap(s) ['AP2-04']",
+      "codes": [
+        "AP2_CHECKOUT_JWT_SIGNATURE_NOT_VERIFIED",
+        "SPEC_GAP"
+      ],
+      "gaps": [
+        "AP2-04"
+      ]
+    },
+    {
+      "line": 2,
+      "name": "tap keyId (reference agent)",
+      "bucket": "spec_ambiguity",
+      "expect": "indeterminate",
+      "observed": "indeterminate",
+      "note": "recorded gap(s) ['TAP-02']",
+      "codes": [
+        "SPEC_GAP"
+      ],
+      "gaps": [
+        "TAP-02"
+      ]
+    },
+    {
+      "line": 3,
+      "name": "ap2 budget minor over / major under",
+      "bucket": "spec_ambiguity",
+      "expect": "indeterminate",
+      "observed": "indeterminate",
+      "note": "recorded gap(s) ['AP2-06']",
+      "codes": [
+        "AP2_CHECKOUT_JWT_SIGNATURE_NOT_VERIFIED",
+        "SPEC_GAP"
+      ],
+      "gaps": [
+        "AP2-06"
+      ]
+    }
+  ]
+}

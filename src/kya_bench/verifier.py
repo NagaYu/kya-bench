@@ -236,6 +236,30 @@ class _Run:
         return val
 
 
+def deep_nesting_verdict(protocol: str, strictness: Strictness, now: int) -> Verdict:
+    """Fail-closed verdict for input whose nesting defeats structural limits.
+
+    A last-resort backstop so no verifier entry point can leak ``RecursionError``
+    out of a documented "never raises" ``verify*`` call; the parse-boundary and
+    disclosure-walk depth limits normally reject such input first with a more
+    specific code. Only ever reached on pathologically nested input, so it cannot
+    change the verdict of any well-formed credential.
+    """
+    f = reject(Code.INPUT_TOO_DEEPLY_NESTED, "input nesting exceeds the structural depth limit")
+    return Verdict(
+        verdict="reject",
+        mode=None,
+        strictness=strictness,
+        evaluated_at=now,
+        identity_ok=False,
+        delegation_chain_ok=False,
+        constraints=[],
+        findings=[f],
+        checks=[Check("input.depth", "fail", f.message)],
+        protocol=protocol,
+    )
+
+
 def verify(
     bundle: Any,
     *,
@@ -266,11 +290,14 @@ def verify(
         policy=constraint_policy,
         merchant_pointer=merchant_pointer,
     )
-    if _check_bundle(run):
-        _verify_l1(run)
-        _verify_l2(run)
-        _verify_l3(run)
-    return _finish(run)
+    try:
+        if _check_bundle(run):
+            _verify_l1(run)
+            _verify_l2(run)
+            _verify_l3(run)
+        return _finish(run)
+    except RecursionError:
+        return deep_nesting_verdict("vi", run.strictness, run.now)
 
 
 # ==========================================================================
@@ -428,7 +455,9 @@ def _verify_l2(run: _Run) -> None:
 
     if "sd_hash" not in p:
         run.check("L2.sd_hash", reject(Code.SD_HASH_MISSING, "L2 has no sd_hash", "L2"))
-    elif sd_hash is not None and run.l1 is not None:
+    elif sd_hash is not None and run.l1 is not None and run.l1.serialized.isascii():
+        # A non-ASCII L1 already failed L1 parse (SDJWT_NOT_ASCII); do not hash its
+        # serialization — the existing reject stands and sd_hash is left unchecked.
         expected = sha256_b64url(run.l1.serialized) if run.l1.serialized else None
         run.check(
             "L2.sd_hash",

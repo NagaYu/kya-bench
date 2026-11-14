@@ -111,7 +111,7 @@ def check_translation(payload: Any, *, now: int | None = None) -> Verdict:
     if isinstance(payload, str):
         try:
             payload = json.loads(payload)
-        except ValueError:
+        except (ValueError, RecursionError):
             payload = None
     findings: list[Finding] = []
     L = "translation"

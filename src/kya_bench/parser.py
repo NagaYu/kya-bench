@@ -50,13 +50,33 @@ def b64url_decode(s: str) -> bytes:
         raise ValueError(str(exc)) from exc
 
 
+# A serialization hashed by sd_hash / checkout_hash / disclosure digests is, by
+# construction, an ASCII string (parse_jws / parse_sd_jwt reject non-ASCII before
+# anything is hashed). ASCII bytes are identical under "ascii" and "utf-8", so
+# encoding as UTF-8 leaves every real hash byte-for-byte unchanged while making the
+# function total: a non-ASCII value (which can never match an ASCII-derived hash)
+# yields a non-matching digest instead of raising UnicodeEncodeError out of verify().
 def sha256_b64url(text: str) -> str:
     """``B64U(SHA-256(ASCII(text)))`` — the hash used by sd_hash, disclosure digests, checkout_hash."""
-    return b64url_encode(hashlib.sha256(text.encode("ascii")).digest())
+    return b64url_encode(hashlib.sha256(text.encode("utf-8")).digest())
+
+
+# Structural nesting limit for any JSON decoded from attacker-controlled input.
+# The deepest structure in any shipped vector or fixture (envelope or embedded
+# token payload) is depth 8; 64 leaves ~8x headroom for legitimate credentials
+# while sitting far below the interpreter recursion limit (~1000) at which both
+# json's C scanner and the recursive disclosure walk raise RecursionError. Input
+# deeper than this is malformed and fails closed at the parse boundary.
+MAX_JSON_DEPTH = 64
 
 
 class _DuplicateKey(ValueError):
     pass
+
+
+class _TooDeep(ValueError):
+    """Structural nesting exceeds MAX_JSON_DEPTH. A ValueError so every existing
+    parse-boundary handler (JWT/disclosure/bundle JSON) already fails closed."""
 
 
 def _no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -68,9 +88,42 @@ def _no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def _max_nesting_depth(text: str) -> int:
+    """Max ``[``/``{`` nesting depth of a JSON document, skipping string contents.
+    Non-recursive, so it cannot itself overflow the stack."""
+    depth = max_depth = 0
+    in_string = escaped = False
+    for ch in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "[" or ch == "{":
+            depth += 1
+            if depth > max_depth:
+                max_depth = depth
+        elif ch == "]" or ch == "}":
+            depth -= 1
+    return max_depth
+
+
 def strict_json_loads(raw: bytes) -> Any:
-    """UTF-8 JSON decode rejecting duplicate member names. Raises ValueError."""
-    return json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicates)
+    """UTF-8 JSON decode rejecting duplicate member names. Raises ValueError.
+
+    Nesting deeper than ``MAX_JSON_DEPTH`` is rejected (``_TooDeep``) before
+    ``json.loads`` runs, so neither the C scanner nor any downstream recursive
+    walk of the result can be driven to ``RecursionError`` by a crafted input.
+    """
+    text = raw.decode("utf-8")
+    if _max_nesting_depth(text) > MAX_JSON_DEPTH:
+        raise _TooDeep(f"JSON nesting exceeds depth limit {MAX_JSON_DEPTH}")
+    return json.loads(text, object_pairs_hook=_no_duplicates)
 
 
 # --------------------------------------------------------------------------
@@ -249,8 +302,23 @@ def resolve_disclosures(
     sd_listed: set[str] = set()
     array_refs: set[str] = set()
     findings: list[Finding] = []
+    too_deep = False
 
-    def walk(node: Any) -> Any:
+    # Resolution expands disclosure values into the payload tree and recurses
+    # through chained array-element references; a crafted chain can nest far
+    # deeper than any single parsed structure. The resolved tree may not exceed
+    # the same depth limit the parse boundary enforces (the deepest real resolved
+    # tree is single-digit), so we fail closed here instead of overflowing the
+    # stack when a disclosure chain drives the walk past it.
+    def walk(node: Any, depth: int = 0) -> Any:
+        nonlocal too_deep
+        if depth > MAX_JSON_DEPTH:
+            if not too_deep:
+                too_deep = True
+                findings.append(
+                    reject(Code.INPUT_TOO_DEEPLY_NESTED, "resolved disclosure tree exceeds the depth limit", layer)
+                )
+            return node
         if isinstance(node, list):
             items = []
             for el in node:
@@ -266,9 +334,9 @@ def resolve_disclosures(
                         )
                         items.append(el)
                     else:
-                        items.append(walk(disc.value))
+                        items.append(walk(disc.value, depth + 1))
                 else:
-                    items.append(walk(el))
+                    items.append(walk(el, depth + 1))
             return items
         if isinstance(node, dict):
             obj: dict[str, Any] = {}
@@ -276,7 +344,7 @@ def resolve_disclosures(
             for key, val in node.items():
                 if key == "_sd" or (key == "_sd_alg" and node is not payload):
                     continue
-                obj[key] = walk(val)
+                obj[key] = walk(val, depth + 1)
             if sd is not None:
                 if not isinstance(sd, list) or not all(isinstance(x, str) for x in sd):
                     findings.append(reject(Code.CLAIM_TYPE_INVALID, "_sd must be an array of strings", layer))
@@ -292,7 +360,7 @@ def resolve_disclosures(
                             reject(Code.SD_CLAIM_CONFLICT, f"disclosed claim '{disc.name}' already present", layer)
                         )
                         continue
-                    obj[disc.name] = walk(disc.value)
+                    obj[disc.name] = walk(disc.value, depth + 1)
             return obj
         return node
 

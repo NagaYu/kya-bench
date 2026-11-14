@@ -128,7 +128,7 @@ def verify_ap2(bundle: Any, *, fixtures: Fixtures, now: int | None = None) -> Ve
     if isinstance(bundle, str):
         try:
             bundle = json.loads(bundle)
-        except ValueError:
+        except (ValueError, RecursionError):
             bundle = None
     if not isinstance(bundle, dict):
         bundle = {}

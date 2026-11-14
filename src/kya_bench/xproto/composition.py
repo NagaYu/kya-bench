@@ -68,7 +68,7 @@ def verify_composition(presentation: Any, *, fixtures: Fixtures, now: int | None
     if isinstance(presentation, str):
         try:
             presentation = json.loads(presentation)
-        except ValueError:
+        except (ValueError, RecursionError):
             presentation = None
     findings: list[Finding] = []
     checks: list[Check] = []

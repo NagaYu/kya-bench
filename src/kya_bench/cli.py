@@ -140,8 +140,8 @@ def main(argv: list[str] | None = None) -> int:
     payload, strictness, now, protocol = raw, args.strictness, args.now, args.protocol
     try:
         doc = json.loads(raw)
-    except ValueError:
-        doc = None  # not JSON: the verifier reports a bundle error
+    except (ValueError, RecursionError):
+        doc = None  # not JSON (or pathologically nested): the verifier reports a bundle error
     if isinstance(doc, dict) and "expected_verdict" in doc:
         # A conformance vector: verify its payload; flags override the vector's settings.
         kind = doc.get("kind", "bundle")

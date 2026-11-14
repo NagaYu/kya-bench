@@ -154,7 +154,7 @@ def verify_tap(
     if isinstance(bundle, str):
         try:
             bundle = json.loads(bundle)
-        except ValueError:
+        except (ValueError, RecursionError):
             bundle = None
     reqs = bundle.get("requests") if isinstance(bundle, dict) else None
     if not isinstance(reqs, list) or not reqs:
@@ -466,7 +466,7 @@ def _body_json(body: Any) -> Any:
         return None
     try:
         return json.loads(body)
-    except ValueError:
+    except (ValueError, RecursionError):
         return None
 
 
